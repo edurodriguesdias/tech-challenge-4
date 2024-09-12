@@ -5,3 +5,6 @@ pandas
 unidecode
 sqlalchemy
 psycopg2-binary
+scikit-learn
+streamlit
+matplotlib
