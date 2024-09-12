@@ -1,19 +1,16 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
 import requests
 import datetime
 import pandas as pd
 import json
 from .sanitize import Sanitize
-from .database import SessionLocal, engine
-from . import models
+from .database import engine
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 app = FastAPI()
-models.Base.metadata.create_all(bind=engine)
 
-@app.get("/collect")
+@app.get("/extract-data")
 def download_and_extract():
     current_date = datetime.datetime.now().strftime("%Y-%m-%d")
 
@@ -34,12 +31,12 @@ def download_and_extract():
         return {"error": "Erro ao coletar os dados"}
 
 @app.get("/training-model")
-def modelTraining():
+def trainingModel():
     df = pd.read_sql("b3_data", engine)
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df[['quantidade_teorica', 'porcentagem_participacao']])
     
-    kmeans = KMeans(n_clusters=10, random_state=0)
+    kmeans = KMeans(n_clusters=4, random_state=0)
     df['Cluster'] = kmeans.fit_predict(df_scaled)
 
     return df.to_json(orient='records')
