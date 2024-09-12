@@ -7,6 +7,8 @@ from .sanitize import Sanitize
 from .database import engine
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+import os
 
 app = FastAPI()
 
@@ -33,10 +35,43 @@ def download_and_extract():
 @app.get("/training-model")
 def trainingModel():
     df = pd.read_sql("b3_data", engine)
-    scaler = StandardScaler()
-    df_scaled = scaler.fit_transform(df[['quantidade_teorica', 'porcentagem_participacao']])
+    df_scaled = __get_scaled_data(df)
     
-    kmeans = KMeans(n_clusters=4, random_state=0)
+    kmeans = KMeans(n_clusters=2, random_state=0)
+    kmeans.fit(df_scaled)
     df['Cluster'] = kmeans.fit_predict(df_scaled)
 
     return df.to_json(orient='records')
+
+@app.get("/optimal-centroid-number")
+def best_value_for_k_elbow_method():
+    WSS = []
+    K = range(1, 10)
+
+    df = pd.read_sql("b3_data", engine)
+    scaled_data = __get_scaled_data(df)
+    
+    for k in K:
+        kmeansInstance = KMeans(n_clusters=k)
+        kmeansInstance.fit(scaled_data)
+        WSS.append(kmeansInstance.inertia_)
+
+    plt.figure(figsize=(10,5))
+    plt.plot(K, WSS, '-bo')
+    plt.xlabel('k')
+    plt.ylabel('WSS')
+    plt.title('Elbow Method - Optimal Centroid Number')
+    
+    images_dir = 'images'
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
+    
+    file_path = os.path.join(images_dir, 'elbow_method.png')
+
+    plt.savefig(file_path, format='png')
+
+    return {"message": f"Gráfico salvo em: {file_path}"}
+ 
+def __get_scaled_data(df):
+    scaler = StandardScaler()
+    return scaler.fit_transform(df[['quantidade_teorica', 'porcentagem_participacao']])
