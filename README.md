@@ -58,7 +58,7 @@ docker-compose exec web pip install -r ./requirements/requirements.txt
 ```
 rm -rf __pycache__
 ```
-
+e
 ## Banco de Dados
 Este projeto utiliza PostgreSQL como banco de dados. Certifique-se de que o container correspondente esteja em status `running` para o correto funcionamento da API.
 
@@ -69,6 +69,6 @@ http://localhost:8000/docs
 ****
 
 ## Recursos da API
-GET /dados: Coleta os dados da fonte e os armazena no banco de dados.
-GET /optimal-centroid-number: Analisa as informações e indica a melhor quantidade de Clusters usando o Elbow Method.
-POST /training-model: Inicia o processo de treinamento do modelo de Machine Learning com os dados armazenados.
+- GET /extract-data: Coleta os dados da fonte e os armazena no banco de dados.
+- GET /optimal-centroid-number: Analisa as informações e indica a melhor quantidade de Clusters usando o Elbow Method.
+- POST /training-model: Inicia o processo de treinamento do modelo de Machine Learning com os dados armazenados.
