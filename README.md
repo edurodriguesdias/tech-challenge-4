@@ -42,6 +42,10 @@ Para acessar o dashboard, basta abrir o link http://localhost:8501 em seu navega
 
 <img width="1064" alt="image" src="https://github.com/user-attachments/assets/a202d9bc-b097-4562-a935-0d80514a4d09">
 
+### Infraestrutura e Fluxos da Aplicação
+![extract-data](https://github.com/user-attachments/assets/f07fa3a5-7426-4eb5-a207-48b874f7d6ff)
+
+
 
 ## Iniciando a aplicação
 **Subir containers docker**
