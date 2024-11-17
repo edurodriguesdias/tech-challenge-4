@@ -14,8 +14,8 @@ class PredictionInput(BaseModel):
 
 def predict_future_price(ticker, look_back, dias_para_prever):
 
-    modelo = load_model(f'data/{ticker}_modelo.h5')
-    scaler = joblib.load(f'data/{ticker}_scaler.pkl')
+    modelo = load_model(f'src/data/{ticker}_modelo.h5')
+    scaler = joblib.load(f'src/data/{ticker}_scaler.pkl')
 
     predictions = []
     current_input = scaled_data[-look_back:].reshape(1, look_back, 1)
@@ -31,7 +31,7 @@ def predict_future_price(ticker, look_back, dias_para_prever):
     return {"predictions": predictions}
 
 app = FastAPI()
-with open("data/scaled_data.pkl", 'rb') as file:
+with open("src/data/scaled_data.pkl", 'rb') as file:
     scaled_data = pickle.load(file)
 
 @app.post("/predict")
