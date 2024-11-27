@@ -28,7 +28,7 @@ def data_preparation(ticker):
 
     scaled_data = scaler.fit_transform(df[['Close']])
 
-    pickle.dump(scaled_data,open("data/scaled_data.pkl","wb"))
+    pickle.dump(scaled_data,open("src/data/scaled_data.pkl","wb"))
 
     time_step = 60
     X, y = create_dataset(scaled_data, time_step)
