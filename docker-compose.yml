@@ -1,43 +1,34 @@
 services:
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
-    volumes:
-      - db-volume:/var/lib/postgresql/data 
-    ports:
-      - "5432:5432"
-    networks:
-      - tc3-network
-
   api:
     build: .
     volumes:
       - .:/app
     ports:
       - "8003:80"
-    depends_on:
-      - db
     networks:
       - tc3-network
     restart: always
 
-  web:
-    build: .
+  mlflow:
+    build: ./mlflow 
     ports:
-      - 8501:8501
+      - "5000:5000"
     volumes:
-      - .:/app
-    command: streamlit run frontend/interface.py
-    depends_on:
-      - api
+      - ./mlruns:/app/mlruns  
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000  
     networks:
       - tc3-network
-
-volumes:
-  db-volume:
+  
+  training_lambda:
+    build: ./training_lambda  
+    command: ["app.lambda_handler"]
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000 
+    depends_on:
+      - mlflow
+    networks:
+      - tc3-network
 
 networks:
   tc3-network:
