@@ -10,3 +10,4 @@ streamlit
 matplotlib
 yfinance
 evidently
+tensorflow
