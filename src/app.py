@@ -8,6 +8,29 @@ import yfinance as yf
 import pandas as pd
 import joblib
 import pickle
+import os
+import boto3
+
+
+s3 = boto3.client('s3')
+
+def save_to_s3(file_name, bucket_name, file_content):
+    """Helper function to save a file to S3."""
+    s3.put_object(Bucket=bucket_name, Key=file_name, Body=file_content)
+
+
+# Lambda handler
+def lambda_handler(event, context):
+    tickers = ['PETR4.SA', 'VALE3.SA', 'ITUB4.SA', 'ABEV3.SA']
+    
+    for ticker in tickers:
+        X_train, X_test, y_train, y_test, scaler = data_preparation(ticker)
+        train_model(X_train, y_train, X_test, y_test, ticker, scaler)
+
+    return {
+        'statusCode': 200,
+        'body': 'Model training completed and tracked with MLflow for all tickers.'
+    }
 
 def create_dataset(data, time_step=60):
     X, y = [], []
@@ -21,18 +44,13 @@ def data_preparation(ticker):
     end_date = '2024-07-20'
 
     df = yf.download(ticker, start=start_date, end=end_date)
-
     df = df[['Close']]
 
     scaler = MinMaxScaler(feature_range=(0, 1))
-
     scaled_data = scaler.fit_transform(df[['Close']])
-
-    pickle.dump(scaled_data, open(f"data/{ticker}_scaled_data.pkl", "wb"))
 
     time_step = 60
     X, y = create_dataset(scaled_data, time_step)
-
     X = X.reshape(X.shape[0], X.shape[1], 1)
 
     train_size = int(len(X) * 0.8)
@@ -41,9 +59,7 @@ def data_preparation(ticker):
 
     return X_train, X_test, y_train, y_test, scaler
 
-def train_model(ticker):
-    X_train, X_test, y_train, y_test, scaler = data_preparation(ticker)
-
+def train_model(X_train, y_train, X_test, y_test, ticker, scaler):
     model = Sequential()
 
     model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
@@ -57,7 +73,7 @@ def train_model(ticker):
     model.compile(optimizer='adam', loss='mean_squared_error')
 
     # Start MLflow run
-    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_tracking_uri("http://mlflow-url.amazonaws.com")
     with mlflow.start_run():
         # Log model parameters
         mlflow.log_param("units", 50)
@@ -69,20 +85,27 @@ def train_model(ticker):
 
         for epoch in range(10):
             mlflow.log_metric("loss", history.history['loss'][epoch], step=epoch)
-        
+
+      
         mlflow.keras.log_model(model, f"{ticker}_model")
 
-        joblib.dump(scaler, f"data/{ticker}_scaler.pkl")
-        mlflow.log_artifact(f"data/{ticker}_scaler.pkl")
+        model_file_path = "/tmp/model.h5"
+        model.save(model_file_path)  
+        
+        with open(model_file_path, 'rb') as model_file:
+            model_content = model_file.read()
+        model_s3_key = f"models/{ticker}_model.h5"
+        save_to_s3(model_s3_key, "lstm_bucket", model_content)
+        
+        scaler_file_path = "/tmp/scaler.pkl"
+        joblib.dump(scaler, scaler_file_path)  
+        
+        with open(scaler_file_path, 'rb') as scaler_file:
+            scaler_content = scaler_file.read()
+        scaler_s3_key = f"scalers/{ticker}_scaler.pkl"
+        save_to_s3(scaler_s3_key, "lstm_bucket", scaler_content)
 
-        pickle.dump(scaler, open(f"data/{ticker}_scaled_data.pkl", "wb"))
-        mlflow.log_artifact(f"data/{ticker}_scaled_data.pkl")
+        mlflow.log_artifact(model_s3_key)
+        mlflow.log_artifact(scaler_s3_key)
 
-        print(f"Model for {ticker} saved and tracked with MLflow.")
-
-def generate(tickers):
-    for ticker in tickers:
-        train_model(ticker)
-
-tickers = ['PETR4.SA', 'VALE3.SA', 'ITUB4.SA', 'ABEV3.SA']
-generate(tickers)
+    return model

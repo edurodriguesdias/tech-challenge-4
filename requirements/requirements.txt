@@ -8,4 +8,6 @@ psycopg2-binary
 scikit-learn
 streamlit
 matplotlib
+yfinance
+evidently
 tensorflow
