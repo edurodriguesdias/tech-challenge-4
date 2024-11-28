@@ -19,6 +19,7 @@ jobs:
               pip install -r ./requirements/requirements.txt
     
     training-model:
+      needs: requirements
       runs-on: ubuntu-latest
       steps:            
         - name: Train Model && Generate PKL
@@ -26,6 +27,7 @@ jobs:
             python src/train.py
 
     deploy-aws:
+      needs: training-model
       runs-on: ubuntu-latest
       steps:
         - name: Login to Amazon ECR
