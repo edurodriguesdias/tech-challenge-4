@@ -14,13 +14,14 @@ services:
       context: .
       dockerfile: Dockerfile.monitoring
     ports:
-      - "5000:5000"
+      - "5050:5000"
     volumes:
       - ./mlruns:/app/mlruns
     networks:
       - tc3-network
   
   training_lambda:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile.lambda
