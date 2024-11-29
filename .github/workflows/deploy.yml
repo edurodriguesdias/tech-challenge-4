@@ -19,17 +19,23 @@ jobs:
               pip install -r ./requirements/requirements.txt
     
     training-model:
-      needs: requirements
       runs-on: ubuntu-latest
-      steps:            
+      needs: requirements
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4      
+        
         - name: Train Model && Generate PKL
           run: |
-            python src/train.py
+            python ./src/train.py
 
     deploy-aws:
       needs: training-model
       runs-on: ubuntu-latest
       steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+
         - name: Login to Amazon ECR
           id: login-ecr
           uses: aws-actions/amazon-ecr-login@v1
