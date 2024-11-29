@@ -1,4 +1,4 @@
-name: Traning Model and Deploy 
+name: Pipeline Deploy
 on: 
     push:
         branches: [main]
@@ -24,7 +24,7 @@ jobs:
       steps:            
         - name: Train Model && Generate PKL
           run: |
-            python src/train.py
+            python ./src/train.py
 
     deploy-aws:
       needs: training-model
