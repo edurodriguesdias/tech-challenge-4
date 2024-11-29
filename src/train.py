@@ -57,7 +57,7 @@ def train_model(ticker):
     model.compile(optimizer='adam', loss='mean_squared_error')
 
     # Start MLflow run
-    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_tracking_uri("http://44.210.91.134:5000")
     with mlflow.start_run():
         # Log model parameters
         mlflow.log_param("units", 50)
