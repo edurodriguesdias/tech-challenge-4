@@ -23,6 +23,7 @@ jobs:
             python ./src/train.py
 
     deploy-aws:
+      environment: production      
       needs: training-model
       runs-on: ubuntu-latest
       steps:
