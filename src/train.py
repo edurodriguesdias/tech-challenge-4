@@ -8,7 +8,6 @@ import yfinance as yf
 import pandas as pd
 import joblib
 import pickle
-import os
 
 def create_dataset(data, time_step=60):
     X, y = [], []
@@ -29,8 +28,7 @@ def data_preparation(ticker):
 
     scaled_data = scaler.fit_transform(df[['Close']])
 
-    os.makedirs("./data", exist_ok=True)
-    pickle.dump(scaled_data, open(f"./data/{ticker}_scaled_data.pkl", "wb"))
+    pickle.dump(scaled_data, open(f"./src/data/{ticker}_scaled_data.pkl", "wb"))
 
     time_step = 60
     X, y = create_dataset(scaled_data, time_step)
@@ -61,7 +59,6 @@ def train_model(ticker):
     # Start MLflow run
     mlflow.set_tracking_uri("http://localhost:5000")
     with mlflow.start_run():
-        print(os.getenv("BASE_DIR", "./"))
         # Log model parameters
         mlflow.log_param("units", 50)
         mlflow.log_param("dropout_rate", 0.2)
@@ -75,11 +72,11 @@ def train_model(ticker):
         
         mlflow.keras.log_model(model, f"{ticker}_model")
 
-        joblib.dump(scaler, f"./data/{ticker}_scaler.pkl")
-        mlflow.log_artifact(f"./data/{ticker}_scaler.pkl")
+        joblib.dump(scaler, f"./src/data/{ticker}_scaler.pkl")
+        mlflow.log_artifact(f"./src/data/{ticker}_scaler.pkl")
 
-        pickle.dump(scaler, open(f"./data/{ticker}_scaled_data.pkl", "wb"))
-        mlflow.log_artifact(f"./data/{ticker}_scaled_data.pkl")
+        pickle.dump(scaler, open(f"./src/data/{ticker}_scaled_data.pkl", "wb"))
+        mlflow.log_artifact(f"./src/data/{ticker}_scaled_data.pkl")
 
         print(f"Model for {ticker} saved and tracked with MLflow.")
 
