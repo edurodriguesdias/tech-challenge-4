@@ -1,4 +1,4 @@
-name: Traning Model and Deploy 
+name: Pipeline Deploy
 on: 
     push:
         branches: [main]
