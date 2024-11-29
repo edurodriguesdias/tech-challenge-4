@@ -10,18 +10,21 @@ services:
     restart: always
 
   mlflow:
-    build: ./mlflow 
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
     ports:
       - "5000:5000"
     volumes:
-      - ./mlruns:/app/mlruns  
-    environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5000  
+      - ./mlruns:/app/mlruns
     networks:
       - tc3-network
   
   training_lambda:
-    build: ./training_lambda  
+    build:
+      context: .
+      dockerfile: Dockerfile.lambda
+
     command: ["app.lambda_handler"]
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000 
